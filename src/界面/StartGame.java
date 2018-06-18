@@ -1,4 +1,4 @@
-package ½çÃæ;
+package ç•Œé¢;
 
 import java.awt.ActiveEvent;
 import java.awt.BorderLayout;
@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
@@ -34,12 +35,17 @@ import javax.xml.ws.Response;
 
 import org.omg.CORBA.PUBLIC_MEMBER;
 
-import ·½·¨.Users;
-import ÍøÂç.PvPGame;
+import æ–¹æ³•.Users;
+import ç½‘ç»œ.PvPGame;
+import algorithm.Array;
+import algorithm.Judge;
+import algorithm.Replay;
+import algorithm.StepUnit;
+import algorithm.Hint;
 
 import javax.swing.JToolBar;
 
-public class StartGame extends MainFrame{
+public class StartGame extends JPanel{
 
 	private JFrame f3;
 	private JPanel jp1;
@@ -51,23 +57,31 @@ public class StartGame extends MainFrame{
 	private JLabel jl5;
 	private JButton jb9;
 	private ImageIcon im;
+	private Curtain cur;
+	private ProgressBar pb;
 	
 	private JToolBar jtb;
 	private JButton jb10;
 	private JButton jb11;
 	private JButton jb12;
+	private JButton jbhint;
 	
-	
-	private JButton[] jbs1;
+	private JButton[][] jbs;
+	//private JButton[] jbs1;
 	private JButton[] jbs2;
+	private Replay rp;//each time the way you play
 	
 	private boolean is_pause = false;
-	private GameTimer gt  = new GameTimer();
-	
+	private GameTimer gt=new GameTimer();
+	private AutoPlay ap=new AutoPlay();
+	private static String[] yu = new String[10];
  
 	private Timer timer  = new Timer();
+	private Timer aTimer = new Timer();
 	private JLabel jl3 ;
 	
+	public int[][] matrix;
+	public int md,nd,nump,pd;
     private int[] bool;
     private int[] bool1;
     private int[] array;
@@ -78,6 +92,10 @@ public class StartGame extends MainFrame{
     public static int l = 0;
     public static int ll = 0;
     public static int p = 0;
+    public static int x1 = 0;
+    public static int y1 = 0;
+    public static int x2 = 0;
+    public static int y2 = 0;
     public static int pp = 0;
     public static int q = 0;
     public static int qq = 0;
@@ -87,8 +105,10 @@ public class StartGame extends MainFrame{
     public static int kk = 0;
     public static int ss = 0;
     public static String mm = null;
+
     
     public StartGame sg;
+	private JButton jbauto;
 	
 	 public void sendMain(StartGame s){
 		 this.sg = s;
@@ -98,22 +118,27 @@ public class StartGame extends MainFrame{
 	
 	
 	
-	public StartGame(){
-		f3 = new JFrame("ÏûÏûÀÖ´ó×÷Õ½");
+	public StartGame(String[] yu){
+		StartGame.yu=yu;
+		f3 = new JFrame("è¿è¿çœ‹å¤§ä½œæˆ˜");
 		jp2 = new JPanel();
 		jp1 =  new JPanel();
-		jb9 = new JButton("·µ»Ø´óÌü");
-		jl1 = new JLabel("ËùÓÃÊ±¼ä:");
-		im = new ImageIcon("ÓÎÏ·½çÃæ.jpg");
+		jb9 = new JButton("è¿”å›å¤§å…");
+		jl1 = new JLabel("æ‰€ç”¨æ—¶é—´:");
+		
+		im = new ImageIcon("æ¸¸æˆç•Œé¢.jpg");
 		jl2 = new JLabel(im);
-		jbs1 = new JButton[20];	
+		jbs = new JButton[20][20];
+		//jbs1 = new JButton[20];	
 		jbs2 = new JButton[40];
 		jtb = new JToolBar();
-		jb10 = new JButton("ÄÑ¶ÈÒ»");
-		jb11 = new JButton("ÄÑ¶È¶ş");
-		jb12 = new JButton("ÄÑ¶ÈÈı");
-		jl4 = new JLabel("                  Çë¿ªÊ¼ÓÎÏ·");
-		jl5 = new JLabel("                  ÓÎÏ·ÖĞ");
+		jb10 = new JButton("éš¾åº¦ä¸€");
+		jb11 = new JButton("éš¾åº¦äºŒ");
+		jb12 = new JButton("éš¾åº¦ä¸‰");
+		jbhint=new JButton("æç¤º");
+		jbauto=new JButton("è‡ªåŠ¨");
+		jl4 = new JLabel("                  è¯·å¼€å§‹æ¸¸æˆ");
+		jl5 = new JLabel("                  æ¸¸æˆä¸­");
 		
 		
 
@@ -130,42 +155,66 @@ public class StartGame extends MainFrame{
 		bool1[1] = -2;
 		
 		
-		 RandomNumber rn = new RandomNumber(20);
-	        ArrayList list = rn.Random();
+//		 RandomNumber rn = new RandomNumber(20);
+//	        ArrayList list = rn.Random();
 	        array = new int[20];
-	         
-	        for(int i = 0;i<list.size();i++){
-	        	array[i] = (int)list.get(i);
-	            ImageIcon oneIcon1=new ImageIcon("E:/java/×÷Òµ/Á¬Á¬¿´java´ó×÷Òµ/image/"+ array[i]+".png");
-	            jbs1[i] = new JButton(oneIcon1);
-	        }//ÄÑ¶ÈÒ»
+	        Array arr=new Array(4,5,10);
+			arr.init();
+			md=arr.m;
+			nd=arr.n;
+			matrix=arr.data;
+			for(int i = 1;i<=md;i++){
+	        	for(int j = 1;j<=nd;j++){
+	        		System.out.printf("%d\t",matrix[i][j]);
+	        	}
+	        	System.out.println();
+			}
+	        int count=0;
+	        for(int i = 1;i<=md;i++){
+	        	for(int j = 1;j<=nd;j++){
+	        	//array[i] = (int)list.get(i);
+	            
+	        		ImageIcon oneIcon1=new ImageIcon("D:/æ•´ç†å¥½çš„javaä½œä¸š/æ•°æ®ç»“æ„å®è·µå¤§ä½œä¸š/final/è¿è¿çœ‹javaå¤§ä½œä¸š/image/"+ (matrix[i][j]-1)+".png");
+	            
+	            jbs[i][j] = new JButton(oneIcon1);
+	            
+	           // jbs1[count]=new JButton(oneIcon1);
+	            count++;
+	        	}
+	        }//éš¾åº¦ä¸€
 	        
 	      RandomNumber rn1 = new RandomNumber(40);
 	      ArrayList list1 = rn1.Random();
 	        array1 = new int[40];
-	        for(int i = 0;i<list1.size();i++){
+	        for(int i = 0;i<list1.size();i++){ 
 	        	array1[i] = (int)list1.get(i);
-	            ImageIcon oneIcon2=new ImageIcon("E:/java/×÷Òµ/Á¬Á¬¿´java´ó×÷Òµ/image2/"+ array1[i]+".png");
+	            ImageIcon oneIcon2=new ImageIcon("E:/java/ä½œä¸š/è¿è¿çœ‹javaå¤§ä½œä¸š/image2/"+ array1[i]+".png");
 	            jbs2[i] = new JButton(oneIcon2);
-	        }//ÄÑ¶È¶ş
+	        }//éš¾åº¦äºŒ
 	        
 	     
 	}
 	
 	
 	public void StartLanch(){
-		f3.setSize(1000,700);
-    	f3.setLocation(500,300);
+		f3.setSize(1100,850);
+    	f3.setLocation(400,300);
     	f3.setLayout(null);
     	
-    	jp1.setLocation(10,50);
+    	jp1.setLocation(60,110);
         jp1.setSize(600,600);
         
         jp2.setLocation(700,200);
         jp2.setSize(200,40);
         
-        jb9.setLocation(700,500);
+        jb9.setLocation(750,500);
         jb9.setSize(200,100);
+        
+        jbhint.setLocation(750,400);
+        jbhint.setSize(200, 100);
+        
+        jbauto.setLocation(750,300);
+        jbauto.setSize(200, 100);
         
         jp3.setLocation(10,50);
         jp3.setSize(600,600);
@@ -178,7 +227,13 @@ public class StartGame extends MainFrame{
         jb11.setSize(100,50);
         jb12.setSize(100,50);
         
-        for(int i = 0 ; i < jbs1.length ; i++){
+        for(int i = 1;i<=md;i++){
+        	for(int j = 1;j<=nd;j++){
+        
+            jbs[i][j].setSize(50,50);
+        	}
+        }
+        for(int i = 0 ; i < 20 ; i++){
      	   jbs2[i].setSize(50,50);
         }
 
@@ -187,51 +242,70 @@ public class StartGame extends MainFrame{
         jp2.setOpaque(false);
         
         f3.getLayeredPane().add(jl2, new Integer(Integer.MIN_VALUE));
-    	jl2.setBounds(0, 0, f3.getWidth(), f3.getHeight());// ÉèÖÃ±³¾°±êÇ©µÄÎ»ÖÃ
-     	jl2.setBounds(0, 0, im.getIconWidth(), im.getIconHeight());// ÉèÖÃ±³¾°±êÇ©µÄÎ»ÖÃ
+    	jl2.setBounds(0, 0, f3.getWidth(), f3.getHeight());// è®¾ç½®èƒŒæ™¯æ ‡ç­¾çš„ä½ç½®
+     	jl2.setBounds(0, 0, im.getIconWidth(), im.getIconHeight());// è®¾ç½®èƒŒæ™¯æ ‡ç­¾çš„ä½ç½®
      	
     	Container cp=f3.getContentPane();
     	cp.setLayout(null);
-    	((JPanel)cp).setOpaque(false); //Ìí¼Ó±³¾°Í¼Æ¬
+    	((JPanel)cp).setOpaque(false); //æ·»åŠ èƒŒæ™¯å›¾ç‰‡
     	
     	
 
-    	Font font1 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font1 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jl3.setFont(font1);
+    	jl3.setForeground(Color.RED);
     	
-    	Font font2 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font2 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jl1.setFont(font2);
+    	jl1.setForeground(Color.RED);
         
-    	Font font4 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font4 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jb10.setFont(font4);
     	
-    	Font font5 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font5 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jb11.setFont(font5);
     	
-    	Font font6 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font6 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jb12.setFont(font6);
     	
-    	Font font7 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font7 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jb9.setFont(font7);
     	
-    	Font font8 = new Font("ËÎÌå",Font.PLAIN,25);
+    	Font font111 = new Font("å®‹ä½“",Font.PLAIN,25);
+    	jbhint.setFont(font111);
+    	
+    	//Font font111 = new Font("å®‹ä½“",Font.PLAIN,25);
+    	jbauto.setFont(font111);
+    	Font font8 = new Font("å®‹ä½“",Font.PLAIN,25);
     	jl4.setFont(font8);
     	
-    	Font font9 = new Font("ËÎÌå",Font.PLAIN,25);
-    	jl5.setFont(font9);//ÃÀ»¯×ÖÌå
+    	Font font9 = new Font("å®‹ä½“",Font.PLAIN,25);
+    	jl5.setFont(font9);//ç¾åŒ–å­—ä½“
     	
     	jl5.setVisible(false);
         
         
         TextButton tb = new TextButton();
-       for(int i = 0 ; i < jbs1.length ; i++){
-    	   jbs1[i].addActionListener(tb);
-       }
+     
+       for(int i = 1;i<=md;i++){
+       	for(int j = 1;j<=nd;j++){
        
+           jbs[i][j].addActionListener(tb);
+       	}
+       }
+//       for(int i = 1;i<=md;i++){
+//          	for(int j = 1;j<=nd;j++){
+//       jbs[i][j].setOpaque(false);  
+//       jbs[i][j].setContentAreaFilled(false);  
+//       jbs[i][j].setMargin(new Insets(0, 0, 0, 0));  
+//       jbs[i][j].setFocusPainted(false);  
+//       jbs[i][j].setBorderPainted(false);  
+//       jbs[i][j].setBorder(null);  
+//          	}}
        TextButtonlevel2 tb2 = new TextButtonlevel2();
        for(int i = 0 ; i < jbs2.length ; i++){
     	   jbs2[i].addActionListener(tb2);
-       }//½«°´Å¥Êı×éÖĞÌí¼Ó¼àÌıÆ÷
+       }//å°†æŒ‰é’®æ•°ç»„ä¸­æ·»åŠ ç›‘å¬å™¨
 
     
     	
@@ -250,20 +324,56 @@ public class StartGame extends MainFrame{
     	jb11.addActionListener(ch2);
     	jb12.addActionListener(ch2);
     	
+    	 jbauto.addActionListener(new ActionListener() {
+ 			
+ 			@Override
+ 			public void actionPerformed(ActionEvent e) {
+ 				ap = new AutoPlay();
+ 				aTimer.scheduleAtFixedRate(ap, 0, 1000);
+                ap.run();      
+			  
+ 				
+ 		
+ 				  
+ 				  
+ 			}
+ 		});//æç¤ºæŒ‰é’®
+    	 
+    	 jbhint.addActionListener(new ActionListener() {
+  			
+ 			@Override
+ 			public void actionPerformed(ActionEvent e) {
+// 				  f3.setVisible(false);
+// 				  InterfaceFrame itff =  new InterfaceFrame(yu);
+// 				  itff.InterfaceLanch();
+ 				  Hint ht=new Hint(matrix,md,nd);
+ 				  ht.giveHint();
+ 				 jbs[ht.hx1][ht.hy1].setBackground(Color.RED);
+ 				 jbs[ht.hx2][ht.hy2].setBackground(Color.RED);
+ 		
+ 				  
+ 			}
+ 		});//è¿”å›æŒ‰é’®
     	
             jb9.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				  f3.setVisible(false);
-				  InterfaceFrame itff =  new InterfaceFrame();
+				  InterfaceFrame itff =  new InterfaceFrame(yu);
 				  itff.InterfaceLanch();
 			}
-		});//·µ»Ø°´Å¥
+		});//è¿”å›æŒ‰é’®
             
-            for(int i=0 ; i<20;i++){
-            	jp1.add(jbs1[i]);
-            }
+//            for(int i=0 ; i<20;i++){
+//            	jp1.add(jbs1[i]);
+//            }
+            for(int i = 1;i<=md;i++){
+               	for(int j = 1;j<=nd;j++){
+               		jp1.add(jbs[i][j]);
+                   //jbs[i][j].addActionListener(tb);
+               	}
+               }//éš¾åº¦ä¸€
             
             for(int i=0 ; i<40;i++){
             	jp3.add(jbs2[i]);
@@ -281,6 +391,8 @@ public class StartGame extends MainFrame{
         f3.add(jp3);
         jp2.add(jl1);
     	f3.add(jb9);
+    	f3.add(jbhint);
+    	f3.add(jbauto);
     	
     	f3.add(jp2);
     	jp2.add(jl3);
@@ -293,7 +405,8 @@ public class StartGame extends MainFrame{
     	
     	jp2.setVisible(false);
     	f3.setVisible(true);
-        timer.scheduleAtFixedRate(gt, 0, 1000);
+    	timer.scheduleAtFixedRate(gt, 0, 1000);
+        
 	}
 	
 	 class TextButton implements ActionListener
@@ -301,44 +414,67 @@ public class StartGame extends MainFrame{
 		 
 			public void actionPerformed(ActionEvent e){
 				if(l % 2 == 0){
-					for(int i = 0;i<20;i++){
-						
-					if(e.getSource() == jbs1[i]){
-						     jbs1[i].setBackground(Color.RED);
-				             sg.bool[0] = sg.array[i];
-				             q = i;
+					for(int i = 1;i<=md;i++){
+						for (int j=1;j<=nd;j++) {
+					if(e.getSource() == jbs[i][j]){
+						     jbs[i][j].setBackground(Color.RED);
+				             //sg.bool[0] = sg.array[i];
+				             x1 = i;
+				             y1 = j;
+				             
 						}
+					}
 					}
 					l++;
 				}else{
-					for(int i = 0;i<20;i++){
-					
-						if(e.getSource() == jbs1[i]){
-							jbs1[i].setBackground(Color.RED);
-					          sg.bool[1] = sg.array[i];
-					          p = i;
+					for(int i = 1;i<=md;i++){
+						for (int j=1;j<=nd;j++) {
+					if(e.getSource() == jbs[i][j]){
+						     jbs[i][j].setBackground(Color.RED);
+				             //sg.bool[0] = sg.array[i];
+				             x2 = i;
+				             y2 = j;
+				             
 						}
 					}
-					if((sg.bool[0] == sg.bool[1] + 10)||(sg.bool[0] == sg.bool[1]- 10)){
-						jbs1[q].setVisible(false);
-						jbs1[p].setVisible(false);
-						k++;
-					}//ÅĞ¶Ï°´Å¥ÉÏµÄÍ¼Æ¬ÊÇ·ñÒ»ÖÂ
+					}
+//					for(int i = 0;i<20;i++){
+//					
+//						if(e.getSource() == jbs1[i]){
+//							jbs1[i].setBackground(Color.RED);
+//					          sg.bool[1] = sg.array[i];
+//					          p = i;
+//						}
+//					}
+					Judge jg=new Judge(matrix,md,nd);
+					pd=jg.pd_xiao(x1, y1, x2, y2);
+					if(pd!=0){
+						jbs[x1][y1].setVisible(false);
+						jbs[x2][y2].setVisible(false);
+						k=k+2;
+						matrix[x1][y1]=0;
+						matrix[x2][y2]=0;
+						StepUnit sp= new StepUnit(x1, y1, x2, y2, pd, jg.cutx1, jg.cuty1, jg.cutx2, jg.cuty2);
+						rp.add(sp);
+					}//åˆ¤æ–­æŒ‰é’®ä¸Šçš„å›¾ç‰‡æ˜¯å¦ä¸€è‡´
 					else{
 						m++;
 					}
-					jbs1[p].setBackground(null);
-					jbs1[q].setBackground(null);
-					p = 0;
-					q = 0;
+					jbs[x1][y1].setBackground(null);
+					jbs[x2][y2].setBackground(null);
+					x1 = 0;
+					x2 = 0;
+					y1=0;
+					y2=0;
+					
 					sg.bool[0] = -1;
 					
 					sg.bool[1] = -2;
 					l++;
 				}
-				if(k == 10){
+				if(k == md*nd){
 					int option = JOptionPane.YES_OPTION;
-					JOptionPane.showConfirmDialog(null, "ÄúËùÓÃµÄÊ±¼ä" + ss+"s , µã»÷È·¶¨·µ»Ø´óÌü", "ÓÎÏ·½áÊø", JOptionPane.YES_OPTION);
+					JOptionPane.showConfirmDialog(null, "æ‚¨æ‰€ç”¨çš„æ—¶é—´" + ss+"s , ç‚¹å‡»ç¡®å®šè¿”å›å¤§å…", "æ¸¸æˆç»“æŸ", JOptionPane.YES_OPTION);
 					if(option == JOptionPane.YES_OPTION){
 						PvPGame pv= new PvPGame(ss);
 						pv.run();
@@ -350,20 +486,20 @@ public class StartGame extends MainFrame{
 	                		 if((Users.boolaccount(mn[1],mn[2]) != -2)){
 	                			Users.qlis(mn[1],mn[2],mm); 
 	                			Users.Olis();
-	                		 }//ĞŞ¸ÄÓÃ»§µÄÓÎÏ·³É¼¨
+	                		 }//ä¿®æ”¹ç”¨æˆ·çš„æ¸¸æˆæˆç»©
 	                	 }catch (ClassNotFoundException|IOException e1) {
 
 	         				e1.printStackTrace();
 	         			}
                         k = 0;
 						f3.setVisible(false);
-						InterfaceFrame itf = new InterfaceFrame();
+						InterfaceFrame itf = new InterfaceFrame(yu);
 						itf.InterfaceLanch();
 					}
 				}
 				
 			}
-    }//ÄÑ¶ÈÒ»µÄÓÎÏ·¹æÔòÉè¶¨
+    }//éš¾åº¦ä¸€çš„æ¸¸æˆè§„åˆ™è®¾å®š
 	 
 	 class TextButtonlevel2 implements ActionListener
 	    {
@@ -407,7 +543,7 @@ public class StartGame extends MainFrame{
 					}
 					if(kk == 20){
 						int option = JOptionPane.YES_OPTION;
-						JOptionPane.showConfirmDialog(null, "ÄúËùÓÃµÄÊ±¼ä" + ss+"s , µã»÷È·¶¨·µ»Ø´óÌü", "ÓÎÏ·½áÊø", JOptionPane.YES_OPTION);
+						JOptionPane.showConfirmDialog(null, "æ‚¨æ‰€ç”¨çš„æ—¶é—´" + ss+"s , ç‚¹å‡»ç¡®å®šè¿”å›å¤§å…", "æ¸¸æˆç»“æŸ", JOptionPane.YES_OPTION);
 						
 				
 						if(option == JOptionPane.YES_OPTION){
@@ -428,17 +564,21 @@ public class StartGame extends MainFrame{
 		         			}
 	                        k = 0;
 							f3.setVisible(false);
-							InterfaceFrame itf = new InterfaceFrame();
+							InterfaceFrame itf = new InterfaceFrame(yu);
 							itf.InterfaceLanch();
 						}
 					}
 					
 				}
-	    }//ÄÑ¶È¶şµÄÓÎÏ·¹æÔòÉè¶¨
+	    }//éš¾åº¦äºŒçš„æ¸¸æˆè§„åˆ™è®¾å®š
 	 
 	 class GameTimer extends TimerTask{
 		  private int count_time=0;  
 	      private String date;  
+		
+		public int getTime() {
+			return count_time;
+		}
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
@@ -452,7 +592,7 @@ public class StartGame extends MainFrame{
 			 if(k == 10){
 				 is_pause = true;
 				 
-		}//µ¹¼ÆÊ±¹¦ÄÜ
+		}//å€’è®¡æ—¶åŠŸèƒ½
 
 		
 		}
@@ -466,7 +606,9 @@ public class StartGame extends MainFrame{
 					jl4.setVisible(false);
 					jl5.setVisible(true);
 					jp1.setVisible(true);
-	                  GameTimer gt = new GameTimer();
+	                //cur=new Curtain();
+	                
+					gt = new GameTimer();
 	                  gt.run();      
 				      jp2.setVisible(true);
 				      rr++;
@@ -482,7 +624,7 @@ public class StartGame extends MainFrame{
 		public void actionPerformed(ActionEvent e) {
 			
 				if(e.getSource() == jb11){
-					jl5 = new JLabel("               ÓÎÏ·ÖĞ");
+					jl5 = new JLabel("               æ¸¸æˆä¸­");
 					  jp3.setVisible(true);
 	                  GameTimer gt = new GameTimer();
 	                  gt.run();      
@@ -493,6 +635,57 @@ public class StartGame extends MainFrame{
 			
 		}
 		 
+	 }
+	 public static String[] getyu(){
+			return yu;
+		}
+	 
+	 class AutoPlay extends TimerTask{
+		  private int count_time=0;  
+	      private String date;  
+		  private int flag;
+		  private int count=md*nd;
+		public int getTime() {
+			return count_time;
+		}
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			int countcopytime=count_time; 
+			if(!is_pause){ 
+	                count_time++;
+	                //countcopytime=count_time;
+	              //  date=String.valueOf(count_time);  
+	              //  jl3.setText(date);   
+	              //  ss = count_time;
+	               // int count=md*nd;
+	                flag=0;
+	                if (count_time % 2 ==0 && countcopytime!=count_time) {
+	            	
+	   				  Hint ht=new Hint(matrix,md,nd);
+	   				  
+	   				//  int time;
+	   				  while (count>0 && countcopytime!=count_time && count_time % 2 ==0) {
+	   						  ht.giveHint();
+	   						  jbs[ht.hx1][ht.hy1].setVisible(false);
+	   						  jbs[ht.hx2][ht.hy2].setVisible(false);
+	   						  matrix[ht.hx1][ht.hy1]=0;
+	   						 matrix[ht.hx2][ht.hy2]=0;
+	   						  count=count-2;
+	   						  System.out.println("++");
+	   						  flag=1;
+	   						  countcopytime++;
+	   				  }
+	                }
+	                
+			 }
+			 if(k == 10){
+				 is_pause = true;
+				 
+		}//å€’è®¡æ—¶åŠŸèƒ½
+
+		
+		}
 	 }
  }
 
